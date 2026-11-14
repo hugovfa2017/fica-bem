@@ -297,7 +297,7 @@ select:disabled{opacity:1;background:var(--mist);border-color:transparent;color:
 body.sala .sheet .done .secondary{width:100%;text-decoration:none}
 
 /* Modo sala: telão */
-body.telao .steps,body.telao #reset,body.telao [data-go=sobre],body.telao .room-link,body.roomflow .room-link,body.roomflow .tabs,body.roomflow [data-go=sobre]{display:none}
+body.telao .guide,body.telao .steps,body.telao #reset,body.telao [data-go=sobre],body.telao .room-link,body.roomflow .room-link,body.roomflow .tabs,body.roomflow [data-go=sobre]{display:none}
 body.roomflow .steps{pointer-events:none}
 .room-link{display:none}
 a.ghost,a.secondary{text-decoration:none}
@@ -307,11 +307,16 @@ a.ghost,a.secondary{text-decoration:none}
 .room-note{margin:14px 0 0;font-size:17px;line-height:1.45;max-width:62ch}
 .quiet{margin:16px 0 0;font-size:15px}
 .telao-in{display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
-.join h1{font-size:34px;letter-spacing:-.025em;margin-bottom:14px}
-.qr-card{max-width:270px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:8px;box-shadow:var(--shadow)}
+.t-qr{display:grid;justify-items:start;gap:12px;min-width:0;--qr:270px}
+.t-qr h1{font-size:34px;letter-spacing:-.025em;margin:0}
+#t-go{width:min(100%,var(--qr))}
+#t-wait:empty{display:none}
+#t-wait p{margin:0;font-size:15.5px;color:var(--graphite)}
+#t-wait .pipe{width:min(100%,var(--qr));margin:2px 0 10px;text-align:left}
+.qr-card{width:min(100%,var(--qr));background:#fff;border:1px solid var(--line);border-radius:20px;padding:8px;box-shadow:var(--shadow)}
 .qr-card img{display:block;width:100%;height:auto;image-rendering:pixelated}
-.join-how{margin:12px 0 0;font-size:17px;max-width:26ch}
-.tally{display:flex;align-items:baseline;gap:10px;margin:12px 0 0;font-size:17px;color:var(--graphite)}
+.join-how{margin:0;font-size:17px;max-width:30ch}
+.tally{display:flex;align-items:baseline;gap:10px;margin:0;font-size:17px;color:var(--graphite)}
 .tally b{font:800 64px/1 var(--f-d);color:var(--ink);font-variant-numeric:tabular-nums}
 .conn{display:flex;align-items:center;gap:8px;margin:6px 0 0;font-size:14.5px;color:var(--graphite)}
 .conn::before{content:"";width:9px;height:9px;flex:none;border-radius:50%;background:var(--line)}
@@ -321,9 +326,8 @@ a.ghost,a.secondary{text-decoration:none}
 .cfg summary{display:inline-flex;align-items:center;min-height:40px;cursor:pointer;font-size:14.5px;font-weight:600;color:var(--graphite);text-decoration:underline;text-underline-offset:3px}
 .cfg-in{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:2px 16px 16px;margin-top:4px}
 .cfg-in .row{margin-top:10px}
-.stage{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;min-width:0;align-content:start}
-.stage h2{font-size:26px;margin-bottom:10px}
-.stage h3{font-size:17px;margin:14px 0 8px}
+#v-telao h2{font-size:26px;margin-bottom:10px}
+#v-telao h3{font-size:17px;margin:14px 0 8px}
 .gate{border:1.5px dashed var(--graphite);border-radius:20px;padding:22px}
 .gate p{max-width:52ch;margin:0 0 18px;font-size:17px;color:var(--graphite)}
 .dots{display:flex;gap:12px}
@@ -340,10 +344,11 @@ a.ghost,a.secondary{text-decoration:none}
 .meter b{font:800 26px/1 var(--f-d);font-variant-numeric:tabular-nums}
 .meter b small{font:400 14px/1 var(--f-t);color:var(--graphite)}
 .meter .bar{grid-column:1/-1}
-.waiting{min-height:150px;display:grid;place-content:center;justify-items:center;gap:6px;text-align:center}
-.waiting p{margin:0;max-width:52ch}
-.waiting .hand{font-size:22px}
-.waiting .pipe{width:min(560px,100%);margin-bottom:14px;text-align:left}
+.moodlist{display:grid;gap:12px;margin:0 0 18px}
+.ml{display:grid;grid-template-columns:32px minmax(0,1fr) auto;align-items:center;gap:3px 12px;font-size:16px}
+.ml svg{grid-row:1/3;width:32px;height:32px}
+.ml b{grid-row:1/3;grid-column:3;min-width:1.4em;text-align:right;font:800 28px/1 var(--f-d);font-variant-numeric:tabular-nums}
+.ml .bar{grid-column:2;height:8px}
 .read-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px 28px}
 .resumo{font-size:19px;line-height:1.4;margin:0 0 14px;max-width:58ch}
 .split{display:flex;height:14px;border-radius:99px;overflow:hidden;background:var(--mist)}
@@ -451,14 +456,26 @@ a.ghost,a.secondary{text-decoration:none}
   body.sala .sheet{justify-self:center}
   body.sala .sheet .done .secondary{width:auto}
   body.telao .view{padding-bottom:22px}
-  .telao-in{grid-template-columns:286px minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:44px;align-items:start;height:calc(100dvh - 64px - 48px)}
-  .stage{height:100%;min-height:0;grid-template-rows:auto minmax(0,1fr)}
-  #t-read{min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px}
+  .telao-in{grid-template-columns:286px minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr);grid-template-areas:"qr live" "qr read" "count read";gap:18px 44px;align-items:start;height:calc(100dvh - 64px - 48px)}
+  .t-qr{grid-area:qr}.t-count{grid-area:count}#t-live{grid-area:live;min-width:0}
+  #t-read{grid-area:read;align-self:stretch;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:10px}
+  .telao-in:not(.coleta) .t-qr h1,.telao-in:not(.coleta) .join-how{display:none}
   .live-grid{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
   .read-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr);min-height:0}
   .read-main,.read-side{min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
-  .read-side{padding:0 8px 64px 0}
-  .src{max-width:calc(100% - 330px)}
+  .read-side{padding:0 8px 8px 0}
+  /* Enquanto a sala responde: QR code no centro, contagem de um lado e humor do outro */
+  .telao-in.coleta{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:minmax(0,1fr);grid-template-areas:"count qr live";gap:0 64px;align-items:center}
+  .coleta .t-qr{--qr:min(44vh,440px);justify-items:center;text-align:center;gap:14px}
+  .coleta .t-qr h1{white-space:nowrap}
+  .coleta .qr-card,.coleta #t-go{width:var(--qr)}
+  .coleta .t-count{justify-self:end;width:min(100%,300px);text-align:right}
+  .coleta .tally{display:grid;justify-items:end;gap:4px;font-size:24px}
+  .coleta .tally b{font-size:clamp(120px,24vh,200px);line-height:.86;letter-spacing:-.04em}
+  .coleta .conn{justify-content:flex-end;margin-top:12px}
+  .coleta .cfg-in{text-align:left}
+  .coleta #t-live{justify-self:start;width:min(100%,400px)}
+  .coleta #t-read{display:none}
   /* Demonstração guiada */
   .guide{left:auto;right:22px;bottom:22px;display:block;padding:0;background:none;border:0}
   .guide-sim{display:none}
@@ -466,8 +483,8 @@ a.ghost,a.secondary{text-decoration:none}
   #toast{left:22px;right:auto;bottom:22px;max-width:min(520px,calc(100vw - 44px))}
 }
 @media (max-width:899.98px){body.sala .top{padding-bottom:8px}}
-@media (min-width:1600px){#v-telao,body.telao .guide{zoom:1.3}.telao-in{height:calc((100dvh - 64px)/1.3 - 48px)}}
-@media (min-width:1900px){#v-telao,body.telao .guide{zoom:1.5}.telao-in{height:calc((100dvh - 64px)/1.5 - 48px)}}
+@media (min-width:1600px){#v-telao{zoom:1.3}.telao-in{height:calc((100dvh - 64px)/1.3 - 48px)}.coleta .t-qr{--qr:min(34vh,440px)}.coleta .tally b{font-size:clamp(120px,18vh,200px)}}
+@media (min-width:1900px){#v-telao{zoom:1.5}.telao-in{height:calc((100dvh - 64px)/1.5 - 48px)}.coleta .t-qr{--qr:min(29vh,440px)}.coleta .tally b{font-size:clamp(120px,16vh,200px)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -655,29 +672,33 @@ a.ghost,a.secondary{text-decoration:none}
 
 <!-- MODO SALA: TELÃO -->
 <section id="v-telao" class="view" hidden>
-  <div class="wrap telao-in">
-    <aside class="join">
+  <div class="wrap telao-in coleta">
+    <div class="t-qr">
       <h1>Agora é com a sala</h1>
       <div class="qr-card"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAgAAAQIAQMAAAC6V3tZAAAABlBMVEX///8VHEIxis8EAAADaUlEQVR42u3dQW7DIBBAUe5/abroJrJnBmijBKz3F1WbOvbbIgy0JkmSJEmSJEmSJEmSJEmSJEmSJEmSJEl71KN+P7/8N/zw9fPibgQEBAQEBAQEBAQEhwqyT4oH3P+8XFncn4CAgICAgICAgIDgLEE4/MiGKMWwpL4bAQEBAQEBAQEBAcGTBJcLijFJOAVCQEBAQEBAQEBAQPBIwWUQEs58ZBcTEBAQEBAQEBAQEDxJkI1AWrQuIhulvPmdLAICAgICAgICAgKCDQT1iuvVn+9f801AQEBAQEBAQEBA8CXBEBeutc7el3pzBAQEBAQEBAQEBATfFtTDjHBXpmIO4/51AgICAgICAgICAoLTBcVCiNcLinUUl1vNrqAgICAgICAgICAgINhVkO3fGv63J2dCtGht9uy0BwEBAQEBAQEBAQHBroIM0ZLV18Uy7OxcagICAgICAgICAgKCQwXZHEYvd18q3prqS9u5EhAQEBAQEBAQEBBsLxj6hk+tZ0QICAgICAgICAgICM4VhEOOnm/zWjwyAxEQEBAQEBAQEBAQHCqY/EKPNmMKl1vPPp6AgICAgICAgICAYG9BG+2y1EZHR9cTIQQEBAQEBAQEBAQEpwtmtmTKVlln+tk3oggICAgICAgICAgIthSEMxPFouse7cc0M3QhICAgICAgICAgIDhRcL9dsRbiMjipRzVtKQICAgICAgICAgKCzQTheCN7EaqPDoTIRjUEBAQEBAQEBAQEBOcKijFG9spU7z3b3WltkyYCAgICAgICAgICgu0F2YglO0C6WIa98HgCAgICAgICAgICgkMEw5FJm9jgqc2fFUdAQEBAQEBAQEBAcIigmKXIoNnbVD3avImAgICAgICAgICA4DjBzMkQIaXep2n53DgCAgICAgICAgICgv0EPSqcpcieGm7StDBcISAgICAgICAgICDYWDCzCiK7V/i+1F/eiCIgICAgICAgICAg2FWQjTpqa3iH+60ICAgICAgICAgICB4s6NOFKysICAgICAgICAgICJ4nyDZpyn4Jr/nXiIWAgICAgICAgICAYAPB/DHSk5cREBAQEBAQEBAQEDxDMJyoyN5z6slp0wvTGwQEBAQEBAQEBAQEGwskSZIkSZIkSZIkSZIkSZIkSZIkSZIk6VP9AOL4RyDg33I4AAAAAElFTkSuQmCC" alt="QR code que abre a pesquisa da sala" width="344" height="344"></div>
       <p class="join-how">Aponte a câmera do celular. Leva um minuto e não pede nome.</p>
+      <button class="primary big" id="t-go"></button>
+      <div id="t-wait" aria-live="polite"></div>
+    </div>
+    <div class="t-count">
       <p class="tally" aria-live="polite"><b id="t-n">0</b><span id="t-lbl">respostas</span></p>
       <p class="conn" id="t-conn"></p>
       <details class="cfg">
         <summary>Configurar</summary>
         <div class="cfg-in">
+          <div id="t-keybox">
           <label class="lbl" for="t-key">Chave da API da Anthropic</label>
           <input id="t-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
           <div class="row"><button class="secondary" id="t-key-save">Salvar e testar</button><button class="link" id="t-key-del">Esquecer a chave</button></div>
           <p class="fine" id="t-key-msg" role="status">A chave fica salva só neste navegador, mesmo depois de fechar. Sem ela, a leitura usa o motor simulado.</p>
+          </div>
           <p class="fine" id="t-spend"></p>
           <div class="row"><button class="secondary" id="t-local">Responder neste computador</button><button class="link" id="t-new">Começar nova rodada</button></div>
         </div>
       </details>
-    </aside>
-    <div class="stage">
-      <div id="t-live" aria-live="polite"></div>
-      <div id="t-read"></div>
     </div>
+    <div id="t-live" aria-live="polite"></div>
+    <div id="t-read"></div>
   </div>
 </section>
 </main>
@@ -1383,12 +1404,12 @@ a.ghost,a.secondary{text-decoration:none}
   ];
   function renderGuide() {
     const done = S.guide >= GUIDE.length;
-    $('#guide-label').textContent = done ? 'Reiniciar a demonstração' : `${S.guide + 1}/${GUIDE.length} · ${GUIDE[S.guide][0]}`;
+    $('#guide-label').textContent = done ? (S.room ? 'Reiniciar a demonstração' : narrow.matches ? 'Responder à pesquisa da sala' : 'Agora com a sala: abrir o modo sala') : `${S.guide + 1}/${GUIDE.length} · ${GUIDE[S.guide][0]}`;
   }
   async function guideNext() {
     if (document.body.dataset.view === 'telao' && UI.hook.next) return UI.hook.next();
     if (S.busy) return;
-    if (S.guide >= GUIDE.length) { reset(); return; }
+    if (S.guide >= GUIDE.length) { if (S.room) reset(); else location.href = narrow.matches ? '?sala' : '?telao'; return; } // depois da visão geral, a rodada com a sala
     S.busy = true;
     const state = S;
     try { await GUIDE[S.guide][1](); if (state === S) S.guide++; } finally { state.busy = false; renderGuide(); }
@@ -1477,6 +1498,9 @@ a.ghost,a.secondary{text-decoration:none}
   const MIN = FB.MIN_GROUP, MAX_TEXT = 280, MAX_RESP = 200;
   // Travas de custo: comentários por leitura e leituras com IA por dia.
   const MAX_AI = 60, MAX_READS = 15;
+  // Servidor que guarda a chave da API (Cloudflare, pasta servidor/). Com ele, ninguém cola chave em navegador nenhum.
+  // Vazio: o telão usa a chave colada em Configurar, guardada só neste navegador.
+  const PROXY = '';
   const SDK = 'https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@1.4.0/+esm';
   const MODEL = 'claude-sonnet-5-5', MODEL_NAME = 'Claude Sonnet 5.5';
   const USD_IN = 2 / 1e6, USD_OUT = 10 / 1e6; // US$ 2 e US$ 10 por milhão de tokens
@@ -1632,6 +1656,18 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
       throw e;
     }
   }
+  let quota = null; // { usadas, limite }: leituras de hoje, contadas no servidor
+  const refreshQuota = () => fetch(PROXY).then(r => r.json()).then(o => { if (o && o.ok) { quota = { usadas: o.usadas, limite: o.limite }; render(); } }).catch(() => { /* sem servidor, a leitura cai no motor simulado */ });
+  async function askServer(list) {
+    let res, out;
+    try {
+      res = await fetch(PROXY + '/ler', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ comentarios: list.map(c => ({ id: c.n, texto: c.text.slice(0, 300) })) }) });
+      out = await res.json();
+    } catch (e) { throw new Error('o servidor da leitura não respondeu'); }
+    if (!res.ok || !out.dados) throw new Error(out.erro || 'o servidor da leitura não respondeu');
+    quota = { usadas: out.usadas, limite: out.limite };
+    return { data: out.dados, cost: out.custo || 0 };
+  }
   const timeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error('a IA demorou mais de um minuto')), ms))]);
 
   function spans(text, parts, kind) {
@@ -1679,7 +1715,8 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
     busy = true; render();
     const key = store.get('key', '');
     let out = null, why = '';
-    if (!key) why = 'nenhuma chave da API foi configurada';
+    if (PROXY) { try { out = await timeout(askServer(all.slice(0, MAX_AI)), 60000); } catch (e) { why = e.message; } }
+    else if (!key) why = 'nenhuma chave da API foi configurada';
     else if (spend().reads >= MAX_READS) why = `a trava de ${MAX_READS} leituras com IA por dia foi atingida`;
     else try { out = await timeout(askClaude(key, all.slice(0, MAX_AI)), 60000); } catch (e) { why = e && e.message && !/import|fetch|module/i.test(e.message) ? e.message : 'não houve conexão com a IA'; }
     const items = out ? fromClaude(all, out.data) : all.map(localItem), text = v => String(v || '').slice(0, 400);
@@ -1687,6 +1724,7 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
     reading = Object.assign({ src: out ? 'claude' : 'local', why, cost: out ? out.cost : 0, items, at: resp.size, cut: out ? Math.max(0, all.length - MAX_AI) : 0 }, sum);
     store.set('read', { since, reading });
     busy = false; render();
+    if (PROXY) refreshQuota();
   }
 
   // ---------- Telão: desenhar ----------
@@ -1704,25 +1742,24 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
         <div class="dots" role="img" aria-label="${s.n} de ${MIN} respostas">${dots}</div></div>`;
       return;
     }
-    const max = Math.max.apply(null, s.moods);
-    const moods = U.MOODS.map((m, i) => `<div class="mb">${U.face(i)}<b${s.moods[i] === max ? ' class="hl"' : ''}>${s.moods[i]}</b><small>${esc(m)}</small></div>`).join('');
+    const max = Math.max.apply(null, s.moods), top = i => (s.moods[i] === max ? ' class="hl"' : '');
     const meter = (label, v) => `<div class="meter"><span>${label}</span><b>${num(v)}<small> de 5</small></b><div class="bar"><i style="width:${Math.round(v * 20)}%"></i></div></div>`;
-    $('#t-live').innerHTML = `<h2>Como a sala está hoje</h2><div class="live-grid"><div class="moodbar">${moods}</div>
-      <div class="meters">${meter('Volume de trabalho e estudo', s.load)}${meter('Apoio para dar conta', s.sup)}</div></div>`;
+    const meters = `<div class="meters">${meter('Volume de trabalho e estudo', s.load)}${meter('Apoio para dar conta', s.sup)}</div>`;
+    // Enquanto a sala responde, o humor aparece em lista grande; depois da leitura, em faixa compacta.
+    $('#t-live').innerHTML = '<h2>Como a sala está hoje</h2>' + (reading
+      ? `<div class="live-grid"><div class="moodbar">${U.MOODS.map((m, i) => `<div class="mb">${U.face(i)}<b${top(i)}>${s.moods[i]}</b><small>${esc(m)}</small></div>`).join('')}</div>${meters}</div>`
+      : `<div class="moodlist">${U.MOODS.map((m, i) => `<div class="ml">${U.face(i)}<span>${esc(m)}</span><b${top(i)}>${s.moods[i]}</b><div class="bar"><i style="width:${Math.round(s.moods[i] / max * 100)}%"></i></div></div>`).join('')}</div>${meters}`);
   }
   function renderRead(s) {
-    const el = $('#t-read');
-    if (s.n < MIN) { el.innerHTML = ''; return; }
-    if (busy) {
-      el.innerHTML = `<div class="waiting"><ol class="pipe"><li class="ok">Tirar nomes</li><li class="run">Ler o sentimento</li><li class="run">Achar os temas</li><li>Somar à sala</li></ol>
-        <p class="hand thinking">Lendo ${plural(s.texts, 'comentário', 'comentários')}…</p></div>`;
-      return;
-    }
+    const el = $('#t-read'), wait = $('#t-wait');
     if (!reading) {
-      el.innerHTML = `<div class="waiting"><p class="hand">${s.texts ? `${plural(s.texts, 'comentário espera', 'comentários esperam')} a leitura.` : 'Ninguém escreveu um comentário ainda.'}</p>
-        <p class="muted">${s.texts ? 'A IA tira os nomes, lê o sentimento e acha os temas. O texto só aparece depois disso.' : 'A leitura precisa de pelo menos um comentário.'}</p></div>`;
+      el.innerHTML = '';
+      wait.innerHTML = s.n < MIN ? '' : busy
+        ? `<ol class="pipe"><li class="ok">Tirar nomes</li><li class="run">Ler o sentimento</li><li class="run">Achar os temas</li><li>Somar à sala</li></ol><p class="thinking">Lendo ${plural(s.texts, 'comentário', 'comentários')}…</p>`
+        : `<p>${s.texts ? `${plural(s.texts, 'comentário espera', 'comentários esperam')} a leitura.` : 'Ninguém escreveu um comentário ainda.'}</p>`;
       return;
     }
+    wait.innerHTML = '';
     const R = reading, n = R.items.length, count = k => R.items.filter(i => i.sentiment === k).length;
     const c = count('Crítico'), ne = count('Neutro'), p = count('Positivo');
     const themes = topThemes(R.items).slice(0, 3).map(t => `<li><span>${esc(t.name)}</span><b>${pct(t.share)}</b><div class="bar"><i style="width:${pct(t.share)}"></i></div></li>`).join('');
@@ -1760,9 +1797,15 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
     $('#t-n').textContent = s.n;
     $('#t-lbl').textContent = s.n === 1 ? 'resposta' : 'respostas';
     renderLive(s); renderRead(s);
-    $('#guide-label').textContent = busy ? 'Lendo os comentários…' : reading ? 'Ir para o painel do RH' : s.n < MIN ? `Faltam ${MIN - s.n} para abrir o painel` : 'Ler os comentários com IA';
+    // O botão fica sempre logo abaixo do QR code: primeiro lê os comentários, depois leva ao painel do RH.
+    $('.telao-in').classList.toggle('coleta', !reading);
+    const go = $('#t-go'), arrow = ' <span aria-hidden="true">→</span>';
+    go.disabled = busy || (!reading && (s.n < MIN || !s.texts));
+    go.innerHTML = busy ? 'Lendo os comentários…' : reading ? 'Ir para o painel do RH' + arrow : s.n < MIN ? `Faltam ${plural(MIN - s.n, 'resposta', 'respostas')}` : !s.texts ? 'Falta um comentário para ler' : 'Ler os comentários com IA' + arrow;
     const sp = spend();
-    $('#t-spend').textContent = `Hoje: ${plural(sp.reads, 'leitura', 'leituras')} com IA de ${MAX_READS} permitidas, cerca de ${sp.reads ? usd(sp.usd) : 'US$ 0,00'}.`;
+    $('#t-spend').textContent = PROXY
+      ? 'A chave fica guardada no servidor do Fica Bem. ' + (quota ? `Hoje: ${plural(quota.usadas, 'leitura', 'leituras')} com IA de ${quota.limite} permitidas.` : '')
+      : `Hoje: ${plural(sp.reads, 'leitura', 'leituras')} com IA de ${MAX_READS} permitidas, cerca de ${sp.reads ? usd(sp.usd) : 'US$ 0,00'}.`;
   }
 
   function screen() {
@@ -1778,6 +1821,10 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
       keep();
       $('#t-key').value = '••••••••••••';
       $('#t-key-msg').textContent = 'Chave salva neste navegador. Ela continua aqui depois de fechar e reabrir.';
+    }
+    if (PROXY) {
+      $('#t-keybox').hidden = true;
+      refreshQuota();
     }
     U.go('telao');
     renderConn(); syncLocal(); listen(); render();
@@ -1802,6 +1849,7 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
       read();
     };
     $('#v-telao').addEventListener('click', async e => {
+      if (e.target.closest('#t-go')) return void U.hook.next();
       if (e.target.closest('#t-again')) return void read();
       if (e.target.closest('#t-local')) return void window.open(location.pathname + '?sala&aqui', '_blank');
       if (e.target.closest('#t-new')) {
