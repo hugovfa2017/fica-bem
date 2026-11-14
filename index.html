@@ -1707,7 +1707,7 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
           <ul>${R.acoes.map(a => `<li>${esc(a)}</li>`).join('')}</ul><p class="fine">São hipóteses. A decisão é das pessoas.</p></div>
         <h3>O que foi escrito, sem nomes</h3>
         <div class="quotes sweep">${quotes || '<p class="muted">Nenhum comentário para mostrar.</p>'}</div>
-        ${hidden ? `<p class="fine">${plural(hidden, 'comentário ficou', 'comentários ficaram')} fora do telão por ofender ou identificar alguém. ${hidden === 1 ? 'Ele conta' : 'Eles contam'} nos números.</p>` : ''}
+        ${hidden ? `<p class="fine">${plural(hidden, 'comentário ficou', 'comentários ficaram')} fora do telão por ofender, identificar alguém ou não fazer sentido. ${hidden === 1 ? 'Ele conta' : 'Eles contam'} nos números.</p>` : ''}
       </div>
     </div>
     <p class="src">${src}${fresh > 0 ? ` <button class="link" id="t-again">Ler de novo com ${plural(fresh, 'resposta nova', 'respostas novas')}</button>` : ''}</p>`;
