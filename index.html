@@ -290,14 +290,22 @@ kbd{display:grid;place-items:center;width:36px;height:36px;flex:none;border-radi
 body.sala .sala-head{display:block;margin:2px 0 14px}
 .sala-head h1{font-size:30px;letter-spacing:-.02em}
 .sala-head p{margin:6px 0 0;color:var(--graphite)}
-body.sala .steps,body.sala .guide,body.sala .topright,body.sala .side,body.sala #p-fill,body.sala .who label+label,body.sala #pulse-next,body.sala:not(.aqui) #pulse-again{display:none}
+body.sala .steps,body.sala .guide,body.sala .topright,body.sala .side,body.sala #p-fill,body.sala #pulse-next,body.sala:not(.aqui) #pulse-again{display:none}
 body.sala .brand{pointer-events:none}
 body.sala .view{padding-bottom:40px}
-body.sala .who{grid-template-columns:minmax(0,1fr)}
+select:disabled{opacity:1;background:var(--mist);border-color:transparent;color:var(--ink)}
 body.sala .sheet .done .secondary{width:100%;text-decoration:none}
 
 /* Modo sala: telão */
-body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
+body.telao .steps,body.telao #reset,body.telao [data-go=sobre],body.telao .room-link,body.roomflow .room-link,body.roomflow .tabs,body.roomflow [data-go=sobre]{display:none}
+body.roomflow .steps{pointer-events:none}
+.room-link{display:none}
+a.ghost,a.secondary{text-decoration:none}
+.home-cta{display:flex;flex-wrap:wrap;gap:10px}
+.secondary.big{min-height:54px;padding:14px 24px;font-size:17px}
+.home .secondary.big{width:100%}
+.room-note{margin:14px 0 0;font-size:17px;line-height:1.45;max-width:62ch}
+.quiet{margin:16px 0 0;font-size:15px}
 .telao-in{display:grid;grid-template-columns:minmax(0,1fr);gap:24px}
 .join h1{font-size:34px;letter-spacing:-.025em;margin-bottom:14px}
 .qr-card{max-width:270px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:8px;box-shadow:var(--shadow)}
@@ -373,7 +381,8 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
   .home-in{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:20px 56px;align-items:center;padding-top:6px}
   .home h1{font-size:clamp(52px,5.8vw,80px)}
   .lead{font-size:21px}
-  .home .primary.big{width:auto}
+  .home .primary.big,.home .secondary.big{width:auto}
+  .room-link{display:inline-flex;align-items:center}
   .home-note{padding:24px;transform:rotate(-1.2deg)}
   .home-note .note{font-size:25px;padding:20px 22px}
   .route{grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px;border-top:0}
@@ -475,6 +484,7 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
   </nav>
   <div class="topright">
     <span class="sim" title="Empresa, dados e motor de análise simulados para fins acadêmicos">Dados e IA simulados</span>
+    <a class="ghost room-link" href="?telao">Modo sala</a>
     <button class="ghost" data-go="sobre">Sobre</button>
     <button class="ghost" id="reset">Reiniciar</button>
   </div>
@@ -487,7 +497,10 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
     <div class="home-copy">
       <h1>Escutar toda semana. Agir antes.</h1>
       <p class="lead">Uma pesquisa de um minuto por semana. A IA lê os comentários e mostra ao RH onde agir. Quem responde vê o que foi feito.</p>
-      <button class="primary big" id="start">Começar a demonstração <span aria-hidden="true">→</span></button>
+      <div class="home-cta">
+        <button class="primary big" id="start">Começar a demonstração <span aria-hidden="true">→</span></button>
+        <a class="secondary big" id="room" href="?telao">Abrir o modo sala</a>
+      </div>
       <p class="fine">Protótipo acadêmico. Empresa, dados e motor de análise são simulados.</p>
     </div>
     <figure class="home-note sweep">
@@ -655,7 +668,7 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
           <label class="lbl" for="t-key">Chave da API da Anthropic</label>
           <input id="t-key" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
           <div class="row"><button class="secondary" id="t-key-save">Salvar e testar</button><button class="link" id="t-key-del">Esquecer a chave</button></div>
-          <p class="fine" id="t-key-msg" role="status">A chave fica só neste navegador. Sem ela, a leitura usa o motor simulado.</p>
+          <p class="fine" id="t-key-msg" role="status">A chave fica salva só neste navegador, mesmo depois de fechar. Sem ela, a leitura usa o motor simulado.</p>
           <p class="fine" id="t-spend"></p>
           <div class="row"><button class="secondary" id="t-local">Responder neste computador</button><button class="link" id="t-new">Começar nova rodada</button></div>
         </div>
@@ -993,6 +1006,7 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
     const slope = den ? num / den : 0, b = my - slope * mx;
     return { slope, at: w => clamp(b + slope * w, 0, 1) };
   }
+  const level = v => (v >= 60 ? 'Sinal forte' : v >= 38 ? 'Atenção' : 'Estável');
   function index(team, comments, shareOverride) {
     const c = TEAMS[team], s = summarize(comments, team), tr = trend(weekly(comments, team));
     const share = shareOverride == null ? s.critShare : shareOverride;
@@ -1005,10 +1019,22 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
       { label: 'Pouco treinamento recente (caso)', value: (1 - c.training / 100) * 10, max: 10, detail: c.training + '% treinados' },
     ];
     const value = Math.round(parts.reduce((a, p) => a + p.value, 0));
-    return { value, level: value >= 60 ? 'Sinal forte' : value >= 38 ? 'Atenção' : 'Estável', parts, share };
+    return { value, level: level(value), parts, share };
+  }
+  // Índice parcial para um grupo sem histórico nem indicadores de RH (a sala, no modo ao vivo):
+  // só os 60 pontos que as próprias respostas informam, levados para a escala de 0 a 100.
+  function partialIndex(share, overload) {
+    const pct = v => Math.round(v * 100) + '%';
+    const parts = [
+      { label: 'Respostas críticas desta rodada', value: share * 40, max: 40, detail: pct(share) },
+      { label: 'Sobrecarga percebida', value: overload * 20, max: 20, detail: pct(overload) + ' deram nota 4 ou 5' },
+      { label: 'Tendência, turnover e treinamento', value: 0, max: 40, detail: 'sem dado na sala', na: true },
+    ];
+    const value = Math.round((parts[0].value + parts[1].value) / 60 * 100);
+    return { value, level: level(value), parts, share };
   }
 
-  const FB = { anonymize, analyze, seed, summarize, weekly, trend, index, TEAMS, SHIFTS, WEEKS, MIN_GROUP, THEME_NAMES: Object.values(T) };
+  const FB = { anonymize, analyze, seed, summarize, weekly, trend, index, partialIndex, TEAMS, SHIFTS, WEEKS, MIN_GROUP, THEME_NAMES: Object.values(T) };
   root.FB = FB;
   if (typeof module !== 'undefined' && module.exports) module.exports = FB;
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -1024,6 +1050,8 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
   const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const wait = ms => new Promise(r => setTimeout(r, still ? 0 : ms));
   const TEAMS = Object.keys(FB.TEAMS);
+  const ROOM = 'Sala'; // no modo sala, a turma é a equipe
+  const ownerOf = team => (team === ROOM ? 'Representante da sala' : 'Coordenação de ' + team);
   const VIEWS = ['inicio', 'escuta', 'analise', 'acao', 'sobre', 'telao'];
   const ORDER = ['escuta', 'analise', 'acao'];
 
@@ -1113,15 +1141,17 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
     $('#p-text').value = ''; $('#pulse-err').hidden = true; moodName();
     $('#pulse').hidden = false; $('#pulse-done').hidden = true;
   }
+  // Quem não escreve comentário ainda conta: as notas viram uma frase que o motor lê.
+  const scaleText = (load, sup) => [
+    load >= 4 ? 'O volume de trabalho está excessivo, estou sobrecarregado.' : load <= 2 ? 'O volume de trabalho está leve e administrável.' : 'O volume de trabalho está moderado.',
+    sup <= 2 ? 'Não recebo da liderança o apoio de que preciso.' : sup >= 4 ? 'Tenho recebido apoio da liderança.' : 'O apoio da liderança poderia melhorar.',
+  ].join(' ');
   function submitPulse() {
     const err = $('#pulse-err');
     if (!pulse.mood || !pulse.load || !pulse.sup) { err.textContent = 'Faltou responder às três perguntas de escolha.'; err.hidden = false; return false; }
     const free = $('#p-text').value.trim();
-    if (UI.hook.pulse) { UI.hook.pulse({ g: $('#p-team').value, m: MOODS.indexOf(pulse.mood) + 1, l: pulse.load, s: pulse.sup, t: free }); return true; }
-    const text = free || [
-      pulse.load >= 4 ? 'O volume de trabalho está excessivo, estou sobrecarregado.' : pulse.load <= 2 ? 'O volume de trabalho está leve e administrável.' : 'O volume de trabalho está moderado.',
-      pulse.sup <= 2 ? 'Não recebo da liderança o apoio de que preciso.' : pulse.sup >= 4 ? 'Tenho recebido apoio da liderança.' : 'O apoio da liderança poderia melhorar.',
-    ].join(' ');
+    if (UI.hook.pulse) { UI.hook.pulse({ g: $('#p-shift').value, m: MOODS.indexOf(pulse.mood) + 1, l: pulse.load, s: pulse.sup, t: free }); return true; }
+    const text = free || scaleText(pulse.load, pulse.sup);
     S.pending = { team: $('#p-team').value, shift: $('#p-shift').value, text };
     $('#pulse').hidden = true; $('#pulse-done').hidden = false;
     return true;
@@ -1215,7 +1245,9 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
     const s = FB.summarize(S.comments, team);
     return S.actions.some(a => a.user && a.team === team) ? s.critShare * (1 - FOLLOW_CUT[S.follow]) : s.critShare;
   }
-  const idx = team => FB.index(team, S.comments, effShare(team));
+  const idx = team => (team === ROOM ? FB.partialIndex(effShare(team), S.room.overload) : FB.index(team, S.comments, effShare(team)));
+  // O mesmo índice, sem o efeito da ação registrada
+  const idx0 = team => (team === ROOM ? FB.partialIndex(FB.summarize(S.comments, team).critShare, S.room.overload) : FB.index(team, S.comments));
   const lvlClass = l => ({ 'Sinal forte': 'forte', 'Atenção': 'atencao', 'Estável': 'estavel' }[l]);
   const topTheme = team => { const s = FB.summarize(S.comments, team); return s.themes[0] ? s.themes[0].name : 'Sobrecarga'; };
 
@@ -1240,32 +1272,34 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
   }
 
   function renderPanel() {
-    const team = S.team, I = idx(team);
+    const team = S.team, I = idx(team), room = team === ROOM;
     const s = FB.summarize(S.comments, team, S.shift ? { shift: S.shift } : undefined);
-    const beams = TEAMS.map(t => {
+    const beams = (S.room ? [ROOM] : TEAMS).map(t => {
       const i = idx(t);
       return `<button class="team ${lvlClass(i.level)}${t === team ? ' on' : ''}" data-team="${esc(t)}" aria-pressed="${t === team}"><b>${esc(t)}</b><em>${i.level}</em><strong>${i.value}</strong><u><i style="width:${i.value}%"></i></u></button>`;
     }).join('');
-    const seg = ['', ...FB.SHIFTS].map(x => `<button data-shift="${x}" class="${x === S.shift ? 'on' : ''}"${x ? '' : ' aria-label="Todos os turnos"'}>${x || 'Todos'}</button>`).join('');
-    const turno = S.shift ? `, turno ${esc(S.shift)}` : '';
+    const seg = ['', ...(room ? S.room.groups : FB.SHIFTS)].map(x => `<button data-shift="${esc(x)}" class="${x === S.shift ? 'on' : ''}"${x ? '' : ` aria-label="${room ? 'Toda a sala' : 'Todos os turnos'}"`}>${esc(x) || 'Todos'}</button>`).join('');
+    const turno = S.shift ? `, ${room ? 'grupo' : 'turno'} ${esc(S.shift)}` : '';
     const head = `<div class="detail-head"><h3>${esc(team)}${turno}</h3><div class="seg" id="seg">${seg}</div></div>`;
     let focus, more = '';
     if (s.hidden) {
-      focus = `<div class="card focus lock">${head}<p><b>Recorte oculto.</b> O turno ${esc(S.shift)} de ${esc(team)} tem ${s.n} resposta${s.n === 1 ? '' : 's'} nas duas últimas semanas. Com menos de ${FB.MIN_GROUP}, o painel não mostra o recorte, para ninguém ser identificado.</p></div>`;
+      focus = `<div class="card focus lock">${head}<p><b>Recorte oculto.</b> ${room ? `O grupo ${esc(S.shift)} tem` : `O turno ${esc(S.shift)} de ${esc(team)} tem`} ${s.n} resposta${s.n === 1 ? '' : 's'} ${room ? 'nesta rodada' : 'nas duas últimas semanas'}. Com menos de ${FB.MIN_GROUP}, o painel não mostra o recorte, para ninguém ser identificado.</p></div>`;
     } else {
-      const sp = spark(team), c = FB.TEAMS[team];
+      const sp = room ? null : spark(team), c = FB.TEAMS[team];
       const themes = s.themes.slice(0, 5).map(t => `<li><span>${esc(t.name)}</span><b>${pct(t.share)}</b><div class="bar"><i style="width:${pct(t.share)}"></i></div></li>`).join('');
-      const parts = I.parts.map(p => `<li><span>${esc(p.label)} <em>${esc(p.detail)}</em></span><b>${Math.round(p.value)}<small>/${p.max}</small></b><div class="bar"><i style="width:${Math.round(p.value / p.max * 100)}%"></i></div></li>`).join('');
-      const rising = sp.slope > 0.01;
+      const parts = I.parts.map(p => p.na
+        ? `<li><span>${esc(p.label)} <em>${esc(p.detail)}</em></span><b><small>fora da conta</small></b></li>`
+        : `<li><span>${esc(p.label)} <em>${esc(p.detail)}</em></span><b>${Math.round(p.value)}<small>/${p.max}</small></b><div class="bar"><i style="width:${Math.round(p.value / p.max * 100)}%"></i></div></li>`).join('');
+      const rising = !room && sp.slope > 0.01;
       const signals = [
         s.themes[0] ? `<b>${esc(s.themes[0].name)}</b> aparece em ${pct(s.themes[0].share)} das respostas críticas.` : '',
-        rising ? `Respostas críticas <b>em alta</b>: de ${pct(sp.first)} para ${pct(sp.last)} em 8 semanas.` : `Respostas críticas <b>estáveis</b> em torno de ${pct(sp.last)}.`,
-        `Indicadores do caso: turnover de <b>${c.turnover}%</b> e treinamento recente em <b>${c.training}%</b>.`,
+        room ? 'É a <b>primeira rodada</b> da sala. Ainda não dá para falar em tendência.' : rising ? `Respostas críticas <b>em alta</b>: de ${pct(sp.first)} para ${pct(sp.last)} em 8 semanas.` : `Respostas críticas <b>estáveis</b> em torno de ${pct(sp.last)}.`,
+        room ? `Sobrecarga percebida: <b>${pct(S.room.overload)}</b> deram nota 4 ou 5 ao volume de trabalho e estudo.` : `Indicadores do caso: turnover de <b>${c.turnover}%</b> e treinamento recente em <b>${c.training}%</b>.`,
       ].filter(Boolean).map(t => `<li>${t}</li>`).join('');
       focus = `<div class="card focus${S.flash ? ' flash' : ''}">${head}
-          <div class="kpis"><p><b>${s.n}</b>respostas</p><p><b>${pct(s.critShare)}</b>críticas</p><p><b>${I.value}</b>índice</p>
-            <p class="proj">${rising ? `<b>${pct(sp.proj)}</b>críticas em 4 semanas, se nada mudar` : '<b>Estável</b>sem tendência de piora em 8 semanas'}</p></div>
-          ${sp.svg}</div>`;
+          <div class="kpis"><p><b>${s.n}</b>respostas</p><p><b>${pct(s.critShare)}</b>críticas</p><p><b>${I.value}</b>${room ? 'índice parcial' : 'índice'}</p>
+            <p class="proj">${room ? '<b>1ª rodada</b>ainda sem tendência para projetar' : rising ? `<b>${pct(sp.proj)}</b>críticas em 4 semanas, se nada mudar` : '<b>Estável</b>sem tendência de piora em 8 semanas'}</p></div>
+          ${room ? `<p class="room-note"><b>O que a sala está dizendo.</b> ${esc(S.room.resumo)}</p>` : sp.svg}</div>`;
       more = `<div class="detail">
         <div class="card"><h3>Temas das respostas críticas</h3><ul class="bars">${themes || '<li>Sem respostas críticas no período.</li>'}</ul></div>
         <div class="card"><h3>Como o índice chega a ${I.value}</h3><ul class="bars parts">${parts}</ul></div>
@@ -1275,8 +1309,8 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
     }
     S.flash = false;
     $('#panel').innerHTML = `
-      <div class="panel-head"><div><h2>Onde olhar primeiro</h2>
-        <p class="muted">Índice de atenção por equipe, com as respostas das duas últimas semanas. Dados sintéticos.</p></div>
+      <div class="panel-head"><div><h2>${S.room ? 'A sala no painel do RH' : 'Onde olhar primeiro'}</h2>
+        <p class="muted">${S.room ? 'Respostas reais desta rodada. O índice é parcial: a sala não tem histórico nem indicadores de RH.' : 'Índice de atenção por equipe, com as respostas das duas últimas semanas. Dados sintéticos.'}</p></div>
         <p class="motto">Sempre por equipe. <span class="hl">Nunca por pessoa.</span></p></div>
       <div class="panel-grid"><div class="teams">${beams}</div>${focus}</div>${more}`;
   }
@@ -1287,8 +1321,9 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
     if (!S.origin) S.origin = { team: S.team, theme: topTheme(S.team) };
     const o = S.origin, I = idx(o.team);
     $('#a-origin').innerHTML = `Sinal de origem: <b>${esc(o.team)}</b>, tema <b>${esc(o.theme)}</b>, índice ${I.value} (${I.level})`;
-    $('#a-type').innerHTML = (ACTIONS[o.theme] || ACTIONS['Sobrecarga']).map((a, i) => `<label class="choice"><input type="radio" name="a-type" value="${esc(a)}"${i ? '' : ' checked'}><span>${esc(a)}</span></label>`).join('');
-    $('#a-owner').placeholder = 'Coordenação de ' + o.team;
+    // Na sala, as opções são as ações que a leitura sugeriu. Quem escolhe continua sendo uma pessoa.
+    $('#a-type').innerHTML = (S.room && S.room.actions.length ? S.room.actions : ACTIONS[o.theme] || ACTIONS['Sobrecarga']).map((a, i) => `<label class="choice"><input type="radio" name="a-type" value="${esc(a)}"${i ? '' : ' checked'}><span>${esc(a)}</span></label>`).join('');
+    $('#a-owner').placeholder = ownerOf(o.team);
     $('#a-err').hidden = true;
     renderBoard();
   }
@@ -1314,7 +1349,7 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
   function renderFollow() {
     const a = S.actions.find(x => x.user), el = $('#follow');
     if (!a) { el.innerHTML = '<h3>Acompanhamento</h3><p class="muted">Registre uma ação para acompanhar o índice em 30, 60 e 90 dias.</p>'; return; }
-    const before = FB.index(a.team, S.comments).value, now = idx(a.team);
+    const before = idx0(a.team).value, now = idx(a.team);
     const seg = [30, 60, 90].map(d => `<button data-follow="${d}" class="${S.follow === d ? 'on' : ''}">${d} dias</button>`).join('');
     el.innerHTML = `<h3>Acompanhamento · ${esc(a.team)}</h3><div class="seg" id="fseg">${seg}</div>` + (S.follow
       ? `<p class="delta"><span>${before}</span><i aria-hidden="true">→</i><b>${now.value}</b><em class="${lvlClass(now.level)}">${now.level}</em></p>
@@ -1337,10 +1372,10 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
       if (!S.last) { go('analise'); showTab('lab'); $('#lab-text').value = EXAMPLE.text; $('#lab-team').value = EXAMPLE.team; await runLab(); }
       sendToPanel();
     }],
-    ['Planejar a intervenção', () => { planFromPanel(); $('#a-owner').value = 'Coordenação de ' + S.origin.team; $('#a-valid').checked = true; }],
+    ['Planejar a intervenção', () => { planFromPanel(); $('#a-owner').value = ownerOf(S.origin.team); $('#a-valid').checked = true; }],
     ['Registrar a ação', () => {
       go('acao');
-      if (!$('#a-owner').value.trim()) $('#a-owner').value = 'Coordenação de ' + S.origin.team;
+      if (!$('#a-owner').value.trim()) $('#a-owner').value = ownerOf(S.origin.team);
       $('#a-valid').checked = true;
       saveAction();
     }],
@@ -1360,6 +1395,7 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
   }
 
   function reset() {
+    if (S && S.room) { location.href = location.pathname; return; } // sair do modo sala é recarregar a demonstração
     S = fresh();
     resetPulse();
     $('#lab-text').value = ''; $('#lab-list').innerHTML = ''; labEmpty();
@@ -1381,7 +1417,9 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
 
     document.addEventListener('click', e => {
       const t = e.target;
-      const goBtn = t.closest('[data-go]'); if (goBtn) return go(goBtn.dataset.go);
+      const goBtn = t.closest('[data-go]');
+      if (goBtn && goBtn.dataset.go === 'inicio' && location.search) return void (location.href = location.pathname); // do modo sala para a demonstração
+      if (goBtn) return go(goBtn.dataset.go);
       const tab = t.closest('[data-tab]'); if (tab) { showTab(tab.dataset.tab); if (tab.dataset.tab === 'painel') renderPanel(); return; }
       const sample = t.closest('[data-sample]'); if (sample) { $('#lab-text').value = SAMPLES[+sample.dataset.sample][1]; return void runLab(); }
       const beam = t.closest('.team'); if (beam) { S.team = beam.dataset.team; S.shift = ''; return renderPanel(); }
@@ -1391,6 +1429,7 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
       if (t.closest('#plan')) return planFromPanel();
     });
     $('#start').addEventListener('click', () => go('escuta'));
+    if (narrow.matches) { const a = $('#room'); a.href = '?sala'; a.textContent = 'Responder à pesquisa da sala'; } // no celular, o modo sala é responder
     $('#pulse').addEventListener('submit', e => { e.preventDefault(); submitPulse(); });
     $('#p-fill').addEventListener('click', fillExample);
     $('#p-team').addEventListener('change', renderCount);
@@ -1409,12 +1448,14 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
     });
     reset();
   }
-  const UI = window.FBUI = { $, $$, esc, pct, face, MOODS, ACTIONS, marked, sentClass, sentLabel, themeTags, toast, go, hook: {},
-    // Entra no painel no mesmo ponto da demonstração guiada: com o comentário de exemplo já somado a Operações.
-    toPanel() {
-      const r = FB.analyze(EXAMPLE.text);
-      S.comments.push({ team: EXAMPLE.team, shift: EXAMPLE.shift, week: FB.WEEKS, text: r.clean, sentiment: r.sentiment, themes: r.themes.map(t => t.name) });
-      S.team = EXAMPLE.team; S.shift = '';
+  const UI = window.FBUI = { $, $$, esc, pct, face, MOODS, ACTIONS, marked, sentClass, sentLabel, themeTags, scaleText, toast, go, hook: {},
+    // A sala entra no painel como uma equipe, e a demonstração guiada segue do passo 4 com ela.
+    // room: { items: [{ g, text, sentiment, themes }], overload, groups, resumo, actions }
+    toPanel(room) {
+      S.room = room; S.actions = [];
+      S.comments = S.comments.concat(room.items.map(i => ({ team: ROOM, shift: i.g, week: FB.WEEKS, text: i.text, sentiment: i.sentiment, themes: i.themes })));
+      S.team = ROOM; S.shift = '';
+      document.body.classList.add('roomflow');
       go('analise'); showTab('painel'); S.guide = 3; renderGuide();
     } };
   init();
@@ -1461,8 +1502,10 @@ body.telao .steps,body.telao #reset,body.telao [data-go=sobre]{display:none}
     const here = q.has('aqui'); // resposta digitada no computador do telão: não passa pela rede
     document.body.classList.add('sala');
     if (here) document.body.classList.add('aqui');
-    $('#p-team').parentNode.firstChild.textContent = 'Hoje você ';
-    $('#p-team').innerHTML = GROUPS.map(g => `<option>${esc(g)}</option>`).join('');
+    // A equipe é a sala. O segundo campo, que na empresa é o turno, aqui é a situação de quem responde.
+    $('#p-team').innerHTML = '<option>Sala</option>'; $('#p-team').disabled = true;
+    $('#p-shift').parentNode.firstChild.textContent = 'Hoje você ';
+    $('#p-shift').innerHTML = GROUPS.map(g => `<option>${esc(g)}</option>`).join('');
     const legends = $$('#pulse legend');
     legends[1].textContent = 'Como está o seu volume de trabalho e estudo nesta semana?';
     legends[2].textContent = 'Você tem o apoio de que precisa para dar conta?';
@@ -1601,7 +1644,7 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
   }
   function localItem(c) {
     const a = FB.analyze(c.raw);
-    return { g: c.g, clean: a.clean, sentiment: a.sentiment, themes: a.themes.map(t => ({ name: t.name })), evidence: a.evidence.map(e => ({ start: e.start, end: e.end, kind: e.kind })), hide: false };
+    return { id: c.id, g: c.g, clean: a.clean, sentiment: a.sentiment, themes: a.themes.map(t => ({ name: t.name })), evidence: a.evidence.map(e => ({ start: e.start, end: e.end, kind: e.kind })), hide: false };
   }
   function topThemes(items) {
     const crit = items.filter(i => i.sentiment === 'Crítico'), base = crit.length ? crit : items, count = {};
@@ -1617,7 +1660,7 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
       let text = c.text;
       list(a.mascarar).forEach(m => { if (m.length > 1) text = text.split(m).join('[nome]'); });
       const sentiment = ['Crítico', 'Neutro', 'Positivo'].includes(a.sentimento) ? a.sentimento : 'Neutro';
-      return { g: c.g, clean: text, sentiment, themes: list(a.temas).filter(t => FB.THEME_NAMES.includes(t)).slice(0, 2).map(name => ({ name })), evidence: spans(text, list(a.trechos), sentiment === 'Positivo' ? 'pos' : 'neg'), hide: a.ocultar === true };
+      return { id: c.id, g: c.g, clean: text, sentiment, themes: list(a.temas).filter(t => FB.THEME_NAMES.includes(t)).slice(0, 2).map(name => ({ name })), evidence: spans(text, list(a.trechos), sentiment === 'Positivo' ? 'pos' : 'neg'), hide: a.ocultar === true };
     });
   }
   function localSummary(items) {
@@ -1631,7 +1674,7 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
 
   async function read() {
     if (busy) return;
-    const all = [...resp.values()].filter(r => r.t).map((r, i) => { const a = FB.anonymize(r.t); return { n: i + 1, g: r.g, raw: r.t, text: a.text }; });
+    const all = [...resp.entries()].filter(([, r]) => r.t).map(([id, r], i) => { const a = FB.anonymize(r.t); return { n: i + 1, id, g: r.g, raw: r.t, text: a.text }; });
     if (!all.length) return;
     busy = true; render();
     const key = store.get('key', '');
@@ -1705,8 +1748,8 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
       <div class="read-side">
         <div class="card signals"><h3>Sinal para o Núcleo validar</h3><p>${esc(R.sinal)}</p>
           <ul>${R.acoes.map(a => `<li>${esc(a)}</li>`).join('')}</ul><p class="fine">São hipóteses. A decisão é das pessoas.</p></div>
-        <h3>O que foi escrito, sem nomes</h3>
-        <div class="quotes sweep">${quotes || '<p class="muted">Nenhum comentário para mostrar.</p>'}</div>
+        ${R.src === 'claude' ? `<h3>O que foi escrito, sem nomes</h3>
+        <div class="quotes sweep">${quotes || '<p class="muted">Nenhum comentário para mostrar.</p>'}</div>` : '<p class="muted quiet">Os comentários só vão para o telão quando a leitura é feita pela IA, que tira as ofensas e o que identifica alguém.</p>'}
         ${hidden ? `<p class="fine">${plural(hidden, 'comentário ficou', 'comentários ficaram')} fora do telão por ofender, identificar alguém ou não fazer sentido. ${hidden === 1 ? 'Ele conta' : 'Eles contam'} nos números.</p>` : ''}
       </div>
     </div>
@@ -1724,18 +1767,32 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
 
   function screen() {
     document.body.classList.add('telao');
-    const sim = ['.sim', '.guide-sim'].map(s => $(s)), old = sim[0].textContent;
-    sim.forEach(el => { el.textContent = 'Respostas reais da sala'; });
+    ['.sim', '.guide-sim'].forEach(s => { $(s).textContent = 'Respostas reais da sala'; });
     since = store.get('since', 0);
     if (!since) { since = Math.floor(Date.now() / 1000) - 1800; store.set('since', since); }
     const saved = store.get('read', null);
     if (saved && saved.since === since) reading = saved.reading;
-    $('#t-key').value = store.get('key', '') ? '••••••••••••' : '';
+    // Pede ao navegador para tratar o que está guardado aqui como permanente, para a chave não ser descartada.
+    const keep = () => { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); };
+    if (store.get('key', '')) {
+      keep();
+      $('#t-key').value = '••••••••••••';
+      $('#t-key-msg').textContent = 'Chave salva neste navegador. Ela continua aqui depois de fechar e reabrir.';
+    }
     U.go('telao');
     renderConn(); syncLocal(); listen(); render();
     window.addEventListener('storage', e => { if (e.key === 'fb.sala.local') syncLocal(); });
 
-    const leave = () => { document.body.classList.remove('telao'); sim.forEach(el => { el.textContent = old; }); U.toPanel(); };
+    // A sala vira a equipe do painel: cada resposta entra com a leitura feita aqui (ou, sem comentário, com a leitura das notas).
+    const leave = () => {
+      const by = new Map(reading.items.map(i => [i.id, i])), all = [...resp.entries()];
+      const items = all.map(([id, r]) => {
+        const i = by.get(id) || localItem({ id, g: r.g, raw: r.t || U.scaleText(r.l, r.s) });
+        return { g: r.g, text: i.clean, sentiment: i.sentiment, themes: i.themes.map(t => t.name) };
+      });
+      document.body.classList.remove('telao');
+      U.toPanel({ items, overload: all.filter(([, r]) => r.l >= 4).length / all.length, groups: GROUPS, resumo: reading.resumo, actions: reading.acoes });
+    };
     U.hook.next = () => {
       const s = stats();
       if (busy) return;
@@ -1753,10 +1810,14 @@ Escreva com naturalidade, sem jargão e sem travessões. Não cite números: as 
         return void location.reload();
       }
       const msg = $('#t-key-msg');
-      if (e.target.closest('#t-key-del')) { store.del('key'); $('#t-key').value = ''; msg.textContent = 'Chave apagada deste navegador.'; return; }
+      if (e.target.closest('#t-key-del')) {
+        if (!store.get('key', '') || !confirm('Apagar a chave deste navegador? Para usar a IA de novo, será preciso colar a chave outra vez.')) return;
+        store.del('key'); $('#t-key').value = ''; msg.textContent = 'Chave apagada deste navegador.';
+        return;
+      }
       if (e.target.closest('#t-key-save')) {
         const v = $('#t-key').value.trim();
-        if (v && !/^•+$/.test(v)) store.set('key', v);
+        if (v && !/^•+$/.test(v)) { store.set('key', v); keep(); }
         const key = store.get('key', '');
         if (!key) { msg.textContent = 'Cole a chave no campo acima.'; return; }
         $('#t-key').value = '••••••••••••';
